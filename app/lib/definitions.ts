@@ -1,6 +1,6 @@
 export type DraggableItem = {
   id: number;
   imageSrc: string;
-  startX: number;
-  startY: number;
+  x: number; y: number;
+  width: string; height: string;
 }

@@ -2,9 +2,12 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import Draggable from "react-draggable";
+import Draggable, { DraggableEvent } from "react-draggable";
 import { DraggableItem } from "@/app/lib/definitions";
 import DecorItem from "@/app/ui/decor-item";
+import DecorItemElement from "./ui/decor-item-element";
+import { ResizeDirection } from "re-resizable";
+import { DraggableData, Position, ResizableDelta } from "react-rnd";
 
 export default function Home() {
   const itemLinks = [
@@ -20,11 +23,39 @@ export default function Home() {
     const newDecorItem: DraggableItem = {
       id: nextId,
       imageSrc: imgLink,
-      startX: 0,
-      startY: 0
+      x: 0, y: 0,
+      width: "40px", height: "40px"
     };
     setDecorItems([...decorItems, newDecorItem]);
     setNextId(nextId + 1);
+  }
+
+  function onDragStop(e: DraggableEvent, data: DraggableData) {
+    const imgNode = data.node.querySelector("img");
+    if (!imgNode) return;
+    const newDecorItems = decorItems.slice();
+    const modifiedId = Number(imgNode.id);
+    
+    if (!newDecorItems[modifiedId]) return;
+    newDecorItems[modifiedId].x = data.x;
+    newDecorItems[modifiedId].y = data.y;
+
+    setDecorItems(newDecorItems);
+    console.log(newDecorItems);
+  }
+
+  function onResizeStop(e: MouseEvent | TouchEvent, direction: ResizeDirection, ref: HTMLElement, delta: ResizableDelta, position: Position) {
+    const imgNode = ref.querySelector("img");
+    if (!imgNode) return;
+    const newDecorItems = decorItems.slice();
+    const modifiedId = Number(imgNode.id);
+
+    if (!newDecorItems[modifiedId]) return;
+    newDecorItems[modifiedId].width = ref.style.width;
+    newDecorItems[modifiedId].height = ref.style.height;
+
+    setDecorItems(newDecorItems);
+    console.log(setDecorItems);
   }
 
   return (
@@ -46,25 +77,19 @@ export default function Home() {
       <Image
         src="/tree.jpg"
         alt="Decoration tree"
-        width={500} height={750}
-        className="absolute z-0 h-full left-0 right-0 mx-auto"
+        width={1000} height={1500}
+        className="absolute z-0 left-0 right-0 mx-auto"
+        draggable={false}
       />
 
       {/* Render current decoration items */}
-      {decorItems.map((item, index) => (
-        <Draggable
-          key={index}
-          nodeRef={nodeRef}
-          positionOffset={{ x: item.startX, y: item.startY }}
-        >
-          <img
-            src={item.imageSrc}
-            alt="Decoration item"
-            width={40} height={40}
-            className="absolute z-10"
-            draggable={false}
-          />
-        </Draggable>
+      {decorItems.map((item) => (
+        <DecorItemElement
+          key={`decor-el-${item.id}`}
+          item={item}
+          onDragStop={onDragStop}
+          onResizeStop={onResizeStop}
+        />
       ))}
     </>
   );

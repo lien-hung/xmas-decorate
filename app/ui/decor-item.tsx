@@ -13,8 +13,7 @@ export default function DecorItem({
       <Image
         src={imageSrc}
         alt="Decoration item"
-        width={40}
-        height={40}
+        width={40} height={40}
         onClick={handleOnClick}
       />
     </div>
