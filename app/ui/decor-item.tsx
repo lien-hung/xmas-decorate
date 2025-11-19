@@ -9,13 +9,15 @@ export default function DecorItem({
   handleOnClick: MouseEventHandler
 }) {
   return (
-    <div key={imageSrc} className="bg-blue-500/50 w-16 h-16 m-4 flex justify-center">
+    <button
+      className="bg-blue-500/50 w-16 h-16 m-3 flex justify-center"
+      onClick={handleOnClick}
+    >
       <Image
         src={imageSrc}
         alt="Decoration item"
         width={40} height={40}
-        onClick={handleOnClick}
       />
-    </div>
+    </button>
   );
 }

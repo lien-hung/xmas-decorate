@@ -9,11 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "html-to-image": "^1.11.13",
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-draggable": "^4.5.0",
-    "react-rnd": "^10.5.2"
+    "react-rnd": "^10.5.2",
+    "react-toastify": "^11.0.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

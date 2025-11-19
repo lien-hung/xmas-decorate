@@ -21,6 +21,7 @@ export default function DecorItemElement({
         x: item.x,
         y: item.y
       }}
+      bounds="parent"
       onDragStop={onDragStop}
       onResizeStop={onResizeStop}
     >
