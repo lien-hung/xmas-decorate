@@ -12,9 +12,11 @@ import DecorItemElement from "@/app/ui/decor-item-element";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function MainPage({
-  itemLinks
+  itemLinks,
+  treeLinks
 }: {
-  itemLinks: string[]
+  itemLinks: string[],
+  treeLinks: string[]
 }) {
   // Pagination
   const itemsPerPage = 4;
@@ -113,6 +115,23 @@ export default function MainPage({
       - [ ] Khi mới vào trang sẽ có 2 nút, nút thứ nhất cho trang trí cây thông, nút thứ hai đếm ngược
       sau 1 tuần sẽ được click vào để trang trí ông già noel
       */}
+
+      {/* Save and export */}
+      <div className="absolute z-20 top-3 right-3">
+        <button
+          className="bg-blue-400 p-1 rounded-md mr-1"
+          onClick={handleSave}
+        >
+          <span className="font-bold">Save</span>
+        </button>
+        <button
+          className="bg-green-400 p-1 rounded-md ml-1"
+          onClick={handleExport}
+        >
+          <span className="font-bold">Export to image</span>
+        </button>
+      </div>
+
       {/* Decor item menu */}
       <Draggable nodeRef={menuNodeRef} defaultPosition={{ x: 100, y: 100 }}>
         <div ref={menuNodeRef} className="bg-blue-500/25 max-w-fit h-auto absolute z-20 rounded-md">
@@ -124,7 +143,7 @@ export default function MainPage({
               <Image
                 src="/assets/up-arrow.png"
                 alt="Up arrow"
-                width={26} height={26}
+                width={32} height={32}
                 className={`m-auto ${itemPage <= 0 ? "opacity-25" : ""}`}
               />
             </button>
@@ -179,19 +198,10 @@ export default function MainPage({
           ))}
         </div>
       </div>
-      <button
-        className="bg-blue-400 p-1 rounded-md"
-        onClick={handleSave}
-      >
-        Save
-      </button>
-      <button
-        className="bg-green-400 p-1 rounded-md"
-        onClick={handleExport}
-      >
-        Export to image
-      </button>
-      <ToastContainer />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+      />
     </>
   );
 }
