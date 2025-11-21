@@ -8,8 +8,8 @@ import { DraggableData, Position, ResizableDelta } from "react-rnd";
 import { ResizeDirection } from "re-resizable";
 import { toPng } from "html-to-image";
 import DecorItem from "@/app/ui/decor-item";
-import DecorItemElement from "@/app/ui/decor-item-element";
 import { toast, ToastContainer } from "react-toastify";
+import DecorBox from "@/app/ui/decor-box";
 
 export default function MainPage({
   itemLinks,
@@ -27,6 +27,7 @@ export default function MainPage({
   const exportNodeRef = React.useRef<HTMLDivElement>(null);
 
   // State
+  const [currentTree, setCurrentTree] = useState(treeLinks[0] || "");
   const [decorItems, setDecorItems] = useState<DraggableItem[]>([]);
   const [nextId, setNextId] = useState(0);
   const [itemPage, setItemPage] = useState(0);
@@ -56,7 +57,7 @@ export default function MainPage({
     setNextId(nextId + 1);
   }
 
-  function onDragStop(e: DraggableEvent, data: DraggableData) {
+  function handleDragStop(e: DraggableEvent, data: DraggableData) {
     const imgNode = data.node.querySelector("img");
     if (!imgNode) return;
     const modifiedId = Number(imgNode.id);
@@ -70,7 +71,7 @@ export default function MainPage({
     }));
   }
 
-  function onResizeStop(e: MouseEvent | TouchEvent, direction: ResizeDirection, ref: HTMLElement, delta: ResizableDelta, position: Position) {
+  function handleResizeStop(e: MouseEvent | TouchEvent, direction: ResizeDirection, ref: HTMLElement, delta: ResizableDelta, position: Position) {
     const imgNode = ref.querySelector("img");
     if (!imgNode) return;
     const modifiedId = Number(imgNode.id);
@@ -109,9 +110,8 @@ export default function MainPage({
   return (
     <>
       {/* TODO:
-      - [ ] Drag box nằm ở bên trái, có các nút chức năng như thay đổi background, cây thông/ông già 
+      - [x] Drag box nằm ở bên trái, có các nút chức năng như thay đổi background, cây thông/ông già 
       noel gồm 5 màu, sau đó chọn tên các phụ kiện trang trí
-      - [x] Thêm nút lưu và nút xuất image
       - [ ] Khi mới vào trang sẽ có 2 nút, nút thứ nhất cho trang trí cây thông, nút thứ hai đếm ngược
       sau 1 tuần sẽ được click vào để trang trí ông già noel
       */}
@@ -132,10 +132,29 @@ export default function MainPage({
         </button>
       </div>
 
-      {/* Decor item menu */}
+      {/* Drag menu */}
       <Draggable nodeRef={menuNodeRef} defaultPosition={{ x: 100, y: 100 }}>
-        <div ref={menuNodeRef} className="bg-blue-500/25 max-w-fit h-auto absolute z-20 rounded-md">
-          <div className="flex flex-col">
+        <div ref={menuNodeRef} className="bg-blue-500/25 max-w-fit h-auto absolute z-20 rounded-md flex flex-row">
+          {/* Trees */}
+          <div className="flex flex-col m-auto">
+            {treeLinks.map(treeLink => (
+              <button
+                key={treeLink}
+                className="bg-blue-500/50 w-16 h-16 m-3 flex justify-center"
+                onClick={() => setCurrentTree(treeLink)}
+              >
+                <Image
+                  src={treeLink}
+                  alt="Decoration tree"
+                  width={40} height={40}
+                  className="w-fit h-fit m-auto"
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Decor items */}
+          <div className="flex flex-col m-auto">
             <button
               disabled={itemPage <= 0}
               onClick={() => setItemPage(itemPage - 1)}
@@ -169,35 +188,13 @@ export default function MainPage({
         </div>
       </Draggable>
 
-      {/* Decor box */}
-      <div
-        className={`
-          w-[1000px] h-[600px]
-          border-8 border-solid border-blue-300
-          absolute left-0 right-0 top-0 bottom-0 m-auto
-          overflow-y-scroll
-        `}
-      >
-        <div ref={exportNodeRef}>
-          {/* Main tree image */}
-          <Image
-            src="/tree.jpg"
-            alt="Decoration tree"
-            width={800} height={1200}
-            className="m-auto"
-            draggable={false}
-          />
-          {/* Render current decoration items */}
-          {decorItems.map((item) => (
-            <DecorItemElement
-              key={`decor-el-${item.id}`}
-              item={item}
-              onDragStop={onDragStop}
-              onResizeStop={onResizeStop}
-            />
-          ))}
-        </div>
-      </div>
+      <DecorBox
+        tree={currentTree}
+        decorItems={decorItems}
+        exportNodeRef={exportNodeRef}
+        onDragStop={handleDragStop}
+        onResizeStop={handleResizeStop}
+      />
       <ToastContainer
         position="bottom-right"
         autoClose={3000}

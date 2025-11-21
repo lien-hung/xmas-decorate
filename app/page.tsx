@@ -12,5 +12,5 @@ export default function Home() {
       itemLinks={itemLinks}
       treeLinks={treeLinks}
     />
-  ); 
+  );
 }
