@@ -1,4 +1,3 @@
-import Image from "next/image";
 import DecorItemElement from "@/app/ui/decor-item-element";
 import { DraggableItem } from "@/app/lib/definitions";
 import { DraggableEventHandler } from "react-draggable";
@@ -21,7 +20,7 @@ export default function DecorBox({
     <div className="w-full h-full">
       <div ref={exportNodeRef}>
         {/* Main tree image */}
-        <Image
+        <img
           src={tree}
           alt="Decoration tree"
           width={800} height={800}

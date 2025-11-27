@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import { DraggableItem } from "@/app/lib/definitions";
 import Draggable, { DraggableEvent } from "react-draggable";
 import { DraggableData, Position, ResizableDelta } from "react-rnd";
@@ -137,7 +136,7 @@ export default function MainPage({
                 className="bg-blue-500/50 w-16 h-16 m-3 flex justify-center items-center"
                 onClick={() => setCurrentTree(treeLink)}
               >
-                <Image
+                <img
                   src={treeLink}
                   alt="Decoration tree"
                   width={40} height={40}
@@ -153,7 +152,7 @@ export default function MainPage({
               disabled={itemPage <= 0}
               onClick={() => setItemPage(itemPage - 1)}
             >
-              <Image
+              <img
                 src="/assets/up-arrow.png"
                 alt="Up arrow"
                 width={32} height={32}
@@ -171,7 +170,7 @@ export default function MainPage({
               disabled={itemPage >= maxItemPage}
               onClick={() => setItemPage(itemPage + 1)}
             >
-              <Image
+              <img
                 src="/assets/down-arrow.png"
                 alt="Down arrow"
                 width={32} height={32}
