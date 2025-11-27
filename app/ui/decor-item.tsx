@@ -16,8 +16,8 @@ export default function DecorItem({
       <Image
         src={imageSrc}
         alt="Decoration item"
-        width={40} height={40}
-        className="w-fit h-fit m-auto"
+        width={100} height={100}
+        className="overflow-hidden"
       />
     </button>
   );

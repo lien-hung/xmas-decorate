@@ -10,6 +10,7 @@ import { toPng } from "html-to-image";
 import DecorItem from "@/app/ui/decor-item";
 import { toast, ToastContainer } from "react-toastify";
 import DecorBox from "@/app/ui/decor-box";
+import Snowfall from "react-snowfall";
 
 export default function MainPage({
   itemLinks,
@@ -51,7 +52,7 @@ export default function MainPage({
       id: nextId,
       imageSrc: imgLink,
       x: 0, y: 0,
-      width: "40px", height: "40px"
+      width: "100px", height: "100px"
     };
     setDecorItems([...decorItems, newDecorItem]);
     setNextId(nextId + 1);
@@ -109,13 +110,6 @@ export default function MainPage({
 
   return (
     <>
-      {/* TODO:
-      - [x] Drag box nằm ở bên trái, có các nút chức năng như thay đổi background, cây thông/ông già 
-      noel gồm 5 màu, sau đó chọn tên các phụ kiện trang trí
-      - [ ] Khi mới vào trang sẽ có 2 nút, nút thứ nhất cho trang trí cây thông, nút thứ hai đếm ngược
-      sau 1 tuần sẽ được click vào để trang trí ông già noel
-      */}
-
       {/* Save and export */}
       <div className="absolute z-20 top-3 right-3">
         <button
@@ -140,7 +134,7 @@ export default function MainPage({
             {treeLinks.map(treeLink => (
               <button
                 key={treeLink}
-                className="bg-blue-500/50 w-16 h-16 m-3 flex justify-center"
+                className="bg-blue-500/50 w-16 h-16 m-3 flex justify-center items-center"
                 onClick={() => setCurrentTree(treeLink)}
               >
                 <Image
@@ -188,13 +182,17 @@ export default function MainPage({
         </div>
       </Draggable>
 
-      <DecorBox
-        tree={currentTree}
-        decorItems={decorItems}
-        exportNodeRef={exportNodeRef}
-        onDragStop={handleDragStop}
-        onResizeStop={handleResizeStop}
-      />
+      <div className="w-3xl h-3xl border-8 border-solid border-blue-300 overflow-hidden absolute left-0 right-0 top-0 bottom-0 m-auto">
+        <DecorBox
+          tree={currentTree}
+          decorItems={decorItems}
+          exportNodeRef={exportNodeRef}
+          onDragStop={handleDragStop}
+          onResizeStop={handleResizeStop}
+        />
+      </div>
+
+      <Snowfall />
       <ToastContainer
         position="bottom-right"
         autoClose={3000}

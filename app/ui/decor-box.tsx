@@ -18,20 +18,13 @@ export default function DecorBox({
   onResizeStop: RndResizeCallback
 }) {
   return (
-    <div
-      className={`
-        w-[1000px] h-[600px]
-        border-8 border-solid border-blue-300
-        absolute left-0 right-0 top-0 bottom-0 m-auto
-        overflow-y-scroll
-      `}
-    >
+    <div className="w-full h-full">
       <div ref={exportNodeRef}>
         {/* Main tree image */}
         <Image
           src={tree}
           alt="Decoration tree"
-          width={800} height={1200}
+          width={800} height={800}
           className="m-auto"
           draggable={false}
         />
