@@ -22,9 +22,6 @@ export default function MainPage({
   petLinks: string[],
   ribbonLinks: string[],
 }) {
-  // Pagination
-  const itemsPerPage = 5;
-
   // Node refs
   const exportNodeRef = React.useRef<HTMLDivElement>(null);
 
@@ -35,11 +32,6 @@ export default function MainPage({
   const [treeSubMenu, setTreeSubMenu] = useState<string[]>([]);
   const [decorItems, setDecorItems] = useState<DraggableItem[]>([]);
   const [nextId, setNextId] = useState(0);
-  const [itemPage, setItemPage] = useState(0);
-
-  const maxItemPage = Math.floor(currentMenu.length / itemsPerPage);
-  const pageStartIndex = itemPage * itemsPerPage;
-  const pageEndIndex = pageStartIndex + itemsPerPage;
 
   // Handle saved session
   useEffect(() => {
@@ -62,7 +54,6 @@ export default function MainPage({
       case "ribbons": setCurrentMenu(ribbonLinks); break;
       case "items": setCurrentMenu(itemLinks); break;
     }
-    setItemPage(0);
   }, [selectedMenu]);
 
   function addDecorItem(imgLink: string) {
@@ -150,8 +141,8 @@ export default function MainPage({
       </div>
 
       {/* Menu */}
-      <div className="bg-blue-500/25 max-w-fit absolute top-0 bottom-0">
-        <div className="flex flex-col">
+      <div className="fixed bottom-0 md:m-0 md:top-1/2 md:-translate-y-1/2 md:h-fit">
+        <div className="flex flex-row w-screen bg-blue-500/25 justify-center md:flex-col md:w-fit md:mb-4">
           <button
             className={`m-2 p-2 font-bold rounded-md ${selectedMenu === 'trees' ? 'bg-blue-700' : 'bg-blue-300'}`}
             onClick={() => setSelectedMenu('trees')}
@@ -182,9 +173,9 @@ export default function MainPage({
           </button>
         </div>
 
-        {/* Menu */}
-        <div className="flex flex-col m-auto items-center">
-          <div className="relative">
+        {/* Tree and item menu */}
+        <div className="md:h-[50vh] bg-blue-500/25">
+          <div className="w-screen whitespace-nowrap overflow-x-scroll md:w-fit md:flex md:flex-col md:max-h-full md:overflow-x-hidden md:overflow-y-scroll">
             {/* Tree menu */}
             {selectedMenu === 'trees' &&
               treeLinks
@@ -192,7 +183,7 @@ export default function MainPage({
                 .map((link, idx) => (
                   <button
                     key={link}
-                    className={`w-16 h-16 m-3 flex justify-center items-center peer ${currentTree === link ? 'ring-4 ring-yellow-300 bg-blue-700' : 'bg-blue-500/50'}`}
+                    className={`w-16 h-16 m-3 inline-block ${currentTree === link ? 'ring-4 ring-yellow-300 bg-blue-700' : 'bg-blue-500/50'}`}
                     onClick={() => {
                       setCurrentTree(link);
                       setTreeSubMenu(treeLinks.filter(link => link.startsWith(`trees/${idx + 1}`) && (link.split('/').pop() || link) !== `${idx + 1}.1.png`));
@@ -211,7 +202,7 @@ export default function MainPage({
 
             {/* Tree sub-menu */}
             {selectedMenu === 'trees' && treeSubMenu.length > 0 && (
-              <div className="absolute flex flex-col top-0 left-25 bg-blue-700 rounded-lg">
+              <div className="absolute flex flex-row md:flex-col top-0 left-25 bg-blue-700 rounded-lg">
                 {treeSubMenu.map(link => (
                   <DecorItem
                     key={link}
@@ -225,42 +216,20 @@ export default function MainPage({
 
           {/* Item menu */}
           {selectedMenu !== 'trees' && (
-            <>
-              <button
-                disabled={itemPage <= 0}
-                onClick={() => setItemPage(itemPage - 1)}
-              >
-                <img
-                  src="assets/up-arrow.png"
-                  alt="Up arrow"
-                  width={32} height={32}
-                  className={`m-auto ${itemPage <= 0 ? "opacity-25" : ""}`}
-                />
-              </button>
-              {currentMenu.slice(pageStartIndex, pageEndIndex).map(link => (
+            <div className="w-screen whitespace-nowrap overflow-x-scroll md:w-fit md:flex md:flex-col md:max-h-full md:overflow-x-hidden md:overflow-y-scroll">
+              {currentMenu.map(link => (
                 <DecorItem
                   key={link}
                   imageSrc={link}
                   handleOnClick={() => addDecorItem(link)}
                 />
               ))}
-              <button
-                disabled={itemPage >= maxItemPage}
-                onClick={() => setItemPage(itemPage + 1)}
-              >
-                <img
-                  src="assets/down-arrow.png"
-                  alt="Down arrow"
-                  width={32} height={32}
-                  className={`m-auto ${itemPage >= maxItemPage ? "opacity-25" : ""}`}
-                />
-              </button>
-            </>
+            </div>
           )}
         </div>
       </div>
 
-      <div className="w-3xl h-3xl border-8 border-solid border-blue-300 overflow-hidden absolute left-0 right-0 top-0 bottom-0 m-auto">
+      <div className="w-[75vmin] max-w-3xl aspect-square border-8 border-solid border-blue-300 overflow-hidden absolute top-0 bottom-0 left-0 right-0 m-auto">
         <DecorBox
           tree={currentTree}
           decorItems={decorItems}

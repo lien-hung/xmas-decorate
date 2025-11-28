@@ -23,7 +23,6 @@ export default function DecorBox({
         <img
           src={tree}
           alt="Decoration tree"
-          width={800} height={800}
           className="m-auto"
           draggable={false}
         />

@@ -9,7 +9,6 @@ export default function Home() {
     const treeFolderFiles = readdirSync(path.join(publicPath, "trees", i.toString())).map(file => `trees/${i}/${file}`);
     treeLinks.push(...treeFolderFiles);
   }
-  console.log(treeLinks)
 
   const itemLinks = readdirSync(path.join(publicPath, "items")).map(file => `items/${file}`);
   const petLinks = readdirSync(path.join(publicPath, "pet")).map(file => `pet/${file}`);
