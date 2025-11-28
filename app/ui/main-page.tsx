@@ -153,7 +153,7 @@ export default function MainPage({
               onClick={() => setItemPage(itemPage - 1)}
             >
               <img
-                src="/assets/up-arrow.png"
+                src="assets/up-arrow.png"
                 alt="Up arrow"
                 width={32} height={32}
                 className={`m-auto ${itemPage <= 0 ? "opacity-25" : ""}`}
@@ -171,7 +171,7 @@ export default function MainPage({
               onClick={() => setItemPage(itemPage + 1)}
             >
               <img
-                src="/assets/down-arrow.png"
+                src="assets/down-arrow.png"
                 alt="Down arrow"
                 width={32} height={32}
                 className={`m-auto ${itemPage >= maxItemPage ? "opacity-25" : ""}`}
