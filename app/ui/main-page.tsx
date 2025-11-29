@@ -33,6 +33,7 @@ export default function MainPage({
   const [treeSubMenu, setTreeSubMenu] = useState<string[]>([]);
   const [decorItems, setDecorItems] = useState<DraggableItem[]>([]);
   const [nextId, setNextId] = useState(0);
+  const [touchExpiration, setTouchExpiration] = useState(0);
 
   // Handle saved session
   useEffect(() => {
@@ -70,6 +71,21 @@ export default function MainPage({
 
   function deleteDecorItem(e: React.MouseEvent<HTMLImageElement>) {
     setDecorItems(decorItems.filter(item => item.id !== Number(e.currentTarget.id)));
+  }
+
+  function deleteItemOnDoubleTouch(e: React.TouchEvent<HTMLImageElement>) {
+    if (e.touches.length === 1) {
+      if (!touchExpiration) {
+        setTouchExpiration(e.timeStamp + 400);
+      } else if (e.timeStamp <= touchExpiration) {
+        // Reset for other double touch events
+        setDecorItems(decorItems.filter(item => item.id !== Number(e.currentTarget.id)));
+        setTouchExpiration(0);
+      } else {
+        // Second touch expired
+        setTouchExpiration(e.timeStamp + 400);
+      }
+    }
   }
 
   function handleDragStop(e: DraggableEvent, data: DraggableData) {
@@ -261,6 +277,7 @@ export default function MainPage({
           onDragStop={handleDragStop}
           onResizeStop={handleResizeStop}
           onDoubleClick={deleteDecorItem}
+          onTouchStart={deleteItemOnDoubleTouch}
         />
       </div>
 
