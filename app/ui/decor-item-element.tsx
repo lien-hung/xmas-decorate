@@ -1,15 +1,18 @@
 import { DraggableEventHandler } from "react-draggable";
 import { DraggableItem } from "@/app/lib/definitions";
 import { Rnd, RndResizeCallback } from "react-rnd";
+import { MouseEventHandler } from "react";
 
 export default function DecorItemElement({
   item,
   onDragStop,
-  onResizeStop
+  onResizeStop,
+  onDoubleClick
 }: {
   item: DraggableItem,
   onDragStop: DraggableEventHandler,
-  onResizeStop: RndResizeCallback
+  onResizeStop: RndResizeCallback,
+  onDoubleClick: MouseEventHandler<HTMLImageElement>
 }) {
   return (
     <Rnd
@@ -31,6 +34,7 @@ export default function DecorItemElement({
         src={item.imageSrc}
         alt="Decoration item"
         draggable={false}
+        onDoubleClick={onDoubleClick}
       />
     </Rnd>
   );

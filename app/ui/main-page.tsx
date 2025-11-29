@@ -68,9 +68,9 @@ export default function MainPage({
     setNextId(nextId + 1);
   }
 
-  // function deleteDecorItem(e: React.MouseEvent<HTMLDivElement>) {
-  //   setDecorItems(decorItems.filter(item => item.id !== Number(e.currentTarget.id)));
-  // }
+  function deleteDecorItem(e: React.MouseEvent<HTMLImageElement>) {
+    setDecorItems(decorItems.filter(item => item.id !== Number(e.currentTarget.id)));
+  }
 
   function handleDragStop(e: DraggableEvent, data: DraggableData) {
     const imgNode = data.node.querySelector("img");
@@ -260,6 +260,7 @@ export default function MainPage({
           exportNodeRef={exportNodeRef}
           onDragStop={handleDragStop}
           onResizeStop={handleResizeStop}
+          onDoubleClick={deleteDecorItem}
         />
       </div>
 

@@ -2,19 +2,22 @@ import DecorItemElement from "@/app/ui/decor-item-element";
 import { DraggableItem } from "@/app/lib/definitions";
 import { DraggableEventHandler } from "react-draggable";
 import { RndResizeCallback } from "react-rnd";
+import { MouseEventHandler } from "react";
 
 export default function DecorBox({
   tree,
   decorItems,
   exportNodeRef,
   onDragStop,
-  onResizeStop
+  onResizeStop,
+  onDoubleClick
 }: {
   tree: string,
   decorItems: DraggableItem[],
   exportNodeRef: React.RefObject<HTMLDivElement | null>,
   onDragStop: DraggableEventHandler,
-  onResizeStop: RndResizeCallback
+  onResizeStop: RndResizeCallback,
+  onDoubleClick: MouseEventHandler<HTMLImageElement>
 }) {
   return (
     <div ref={exportNodeRef} className="w-full h-full">
@@ -32,6 +35,7 @@ export default function DecorBox({
           item={item}
           onDragStop={onDragStop}
           onResizeStop={onResizeStop}
+          onDoubleClick={onDoubleClick}
         />
       ))}
     </div>
