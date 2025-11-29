@@ -17,25 +17,23 @@ export default function DecorBox({
   onResizeStop: RndResizeCallback
 }) {
   return (
-    <div className="w-full h-full">
-      <div ref={exportNodeRef}>
-        {/* Main tree image */}
-        <img
-          src={tree}
-          alt="Decoration tree"
-          className="m-auto"
-          draggable={false}
+    <div ref={exportNodeRef} className="w-full h-full">
+      {/* Main tree image */}
+      <img
+        src={tree}
+        alt="Decoration tree"
+        className="m-auto w-auto h-full"
+        draggable={false}
+      />
+      {/* Render current decoration items */}
+      {decorItems.map((item) => (
+        <DecorItemElement
+          key={`decor-el-${item.id}`}
+          item={item}
+          onDragStop={onDragStop}
+          onResizeStop={onResizeStop}
         />
-        {/* Render current decoration items */}
-        {decorItems.map((item) => (
-          <DecorItemElement
-            key={`decor-el-${item.id}`}
-            item={item}
-            onDragStop={onDragStop}
-            onResizeStop={onResizeStop}
-          />
-        ))}
-      </div>
+      ))}
     </div>
   );
 }

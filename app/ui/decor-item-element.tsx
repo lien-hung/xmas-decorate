@@ -21,7 +21,6 @@ export default function DecorItemElement({
         x: item.x,
         y: item.y
       }}
-      lockAspectRatio
       bounds="parent"
       onDragStop={onDragStop}
       onResizeStop={onResizeStop}

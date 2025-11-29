@@ -62,7 +62,7 @@ export default function MainPage({
       id: nextId,
       imageSrc: imgLink,
       x: 0, y: 0,
-      width: "100px", height: "100px"
+      width: 200, height: 200
     };
     setDecorItems([...decorItems, newDecorItem]);
     setNextId(nextId + 1);
@@ -93,7 +93,7 @@ export default function MainPage({
 
     setDecorItems(decorItems.map(item => {
       if (item.id === modifiedId) {
-        return { ...item, width: ref.style.width, height: ref.style.height };
+        return { ...item, ...position, width: ref.offsetWidth, height: ref.offsetHeight };
       } else {
         return item;
       }
@@ -253,7 +253,7 @@ export default function MainPage({
         </div>
       </div>
 
-      <div className="w-[75vmin] max-w-3xl aspect-square border-8 border-solid border-blue-300 overflow-hidden absolute top-0 bottom-0 left-0 right-0 m-auto">
+      <div className="w-[100vmin] max-w-3xl aspect-video border-8 border-solid border-blue-300 overflow-hidden absolute top-0 bottom-0 left-0 right-0 m-auto">
         <DecorBox
           tree={currentTree}
           decorItems={decorItems}
