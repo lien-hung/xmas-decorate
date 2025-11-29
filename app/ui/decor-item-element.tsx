@@ -21,9 +21,11 @@ export default function DecorItemElement({
         x: item.x,
         y: item.y
       }}
+      lockAspectRatio
       bounds="parent"
       onDragStop={onDragStop}
       onResizeStop={onResizeStop}
+      className="hover:border-2 hover:border-gray-400 active:border-2 active:border-gray-400"
     >
       <img
         id={`${item.id}`}

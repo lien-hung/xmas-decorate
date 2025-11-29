@@ -24,6 +24,7 @@ export default function MainPage({
 }) {
   // Node refs
   const exportNodeRef = React.useRef<HTMLDivElement>(null);
+  const treeMenuRef = React.useRef<HTMLDivElement>(null);
 
   // State
   const [selectedMenu, setSelectedMenu] = useState<'trees' | 'pets' | 'ribbons' | 'items'>('trees');
@@ -122,6 +123,24 @@ export default function MainPage({
       });
   }
 
+  // Close tree sub-menu when clicking/tapping outside the menu
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent | TouchEvent) {
+      if (!treeMenuRef.current) return;
+      const target = e.target as Node | null;
+      if (target && !treeMenuRef.current.contains(target)) {
+        setTreeSubMenu([]);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
   return (
     <>
       {/* Save and export */}
@@ -174,49 +193,54 @@ export default function MainPage({
         </div>
 
         {/* Tree and item menu */}
-        <div className="md:h-[50vh] bg-blue-500/25">
-          <div className="w-screen whitespace-nowrap overflow-x-scroll md:w-fit md:flex md:flex-col md:max-h-full md:overflow-x-hidden md:overflow-y-scroll">
+        <div className="md:h-fit md:max-h-[60vh] overflow-x-scroll overflow-y-hidden md:overflow-x-hidden md:overflow-y-scroll bg-blue-500/25">
+          {/* attach ref to detect outside clicks */}
+          <div ref={treeMenuRef} className="w-screen whitespace-nowrap md:w-fit md:max-h-full">
             {/* Tree menu */}
-            {selectedMenu === 'trees' &&
-              treeLinks
-                .filter(link => link.endsWith(".1.png"))
-                .map((link, idx) => (
-                  <button
-                    key={link}
-                    className={`w-16 h-16 m-3 inline-block ${currentTree === link ? 'ring-4 ring-yellow-300 bg-blue-700' : 'bg-blue-500/50'}`}
-                    onClick={() => {
-                      setCurrentTree(link);
-                      setTreeSubMenu(treeLinks.filter(link => link.startsWith(`trees/${idx + 1}`) && (link.split('/').pop() || link) !== `${idx + 1}.1.png`));
-                    }}
-                  >
-                    <img
-                      src={link}
-                      alt="Decoration tree"
-                      width={40} height={40}
-                      className="w-fit h-fit m-auto"
-                    />
-                  </button>
-                )
-                )
-            }
-
-            {/* Tree sub-menu */}
-            {selectedMenu === 'trees' && treeSubMenu.length > 0 && (
-              <div className="absolute flex flex-row md:flex-col top-0 left-25 bg-blue-700 rounded-lg">
-                {treeSubMenu.map(link => (
-                  <DecorItem
-                    key={link}
-                    imageSrc={link}
-                    handleOnClick={() => addDecorItem(link)}
-                  />
-                ))}
-              </div>
-            )}
+            <ul className="flex flex-row md:flex-col">
+              {selectedMenu === 'trees' &&
+                treeLinks
+                  .filter(link => link.endsWith(".1.png"))
+                  .map((link, idx) => (
+                    <li key={link}>
+                      <button
+                        className={`w-16 h-16 m-3 inline-block peer ${currentTree === link ? 'ring-4 ring-yellow-300 bg-blue-700' : 'bg-blue-500/50'}`}
+                        onClick={() => {
+                          setCurrentTree(link);
+                          setTreeSubMenu(treeLinks.filter(link => link.startsWith(`trees/${idx + 1}`) && (link.split('/').pop() || link) !== `${idx + 1}.1.png`));
+                        }}
+                      >
+                        <img
+                          src={link}
+                          alt="Decoration tree"
+                          width={40} height={40}
+                          className="w-fit h-fit m-auto"
+                        />
+                      </button>
+                      <ul className="relative rounded-md md:absolute bg-red-300 hidden peer-[.ring-yellow-300]:inline-block md:ml-5">
+                        {/* Tree sub-menu */}
+                        {treeSubMenu.length > 0 && treeSubMenu.map(link => (
+                          <li
+                            key={link}
+                            className="inline-block"
+                          >
+                            <DecorItem
+                              imageSrc={link}
+                              handleOnClick={() => addDecorItem(link)}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  )
+                  )
+              }
+            </ul>
           </div>
 
           {/* Item menu */}
           {selectedMenu !== 'trees' && (
-            <div className="w-screen whitespace-nowrap overflow-x-scroll md:w-fit md:flex md:flex-col md:max-h-full md:overflow-x-hidden md:overflow-y-scroll">
+            <div className="w-screen whitespace-nowrap md:w-fit md:flex md:flex-col">
               {currentMenu.map(link => (
                 <DecorItem
                   key={link}
