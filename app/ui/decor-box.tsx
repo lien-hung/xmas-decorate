@@ -4,6 +4,7 @@ import { DraggableItem } from "@/app/lib/definitions";
 import { DraggableEventHandler } from "react-draggable";
 import { RndResizeCallback } from "react-rnd";
 import { MouseEventHandler, TouchEventHandler } from "react";
+import { prefix } from "@/app/lib/prefix";
 
 export default function DecorBox({
   tree,
@@ -26,7 +27,7 @@ export default function DecorBox({
     <div ref={exportNodeRef} className="w-full h-full relative">
       {/* White background image */}
       <Image
-        src="/assets/white.jpg"
+        src={`${prefix}/assets/white.jpg`}
         alt="Background"
         fill
         sizes="100vw"
@@ -39,7 +40,7 @@ export default function DecorBox({
       {/* Main tree image */}
       <div className="relative w-full h-full">
         <Image
-          src={`/${tree}`}
+          src={`${prefix}/${tree}`}
           alt="Decoration tree"
           fill
           sizes="100vw"

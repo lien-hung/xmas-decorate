@@ -3,6 +3,7 @@ import { DraggableItem } from "@/app/lib/definitions";
 import { Rnd, RndResizeCallback } from "react-rnd";
 import { MouseEventHandler, TouchEventHandler } from "react";
 import Image from "next/image";
+import { prefix } from "@/app/lib/prefix";
 
 export default function DecorItemElement({
   item,
@@ -41,7 +42,7 @@ export default function DecorItemElement({
       <div className="relative w-full h-full">
         <Image
           id={`${item.id}`}
-          src={`/${item.imageSrc}`}
+          src={`${prefix}/${item.imageSrc}`}
           alt="Decoration item"
           fill
           sizes="100vw"

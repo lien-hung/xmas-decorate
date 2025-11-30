@@ -356,7 +356,7 @@ export default function MainPage({
       </div>
 
       {/* Menu */}
-      <div className="fixed bottom-0 md:m-0 md:top-[4.9375rem] md:translate-y-0 md:h-fit">
+      <div className="fixed bottom-0 md:m-0 md:top-19.75 md:translate-y-0 md:h-fit">
         <div className="flex flex-row w-screen bg-blue-500/25 justify-center md:flex-col md:w-fit md:mb-4 rounded-[7%]">
           <button
             className={`m-2 p-2 font-bold rounded-md ${selectedMenu === 'trees' ? 'bg-blue-700' : 'bg-blue-300'}`}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import "./globals.css";
+import { prefix } from "@/app/lib/prefix";
 
 export const metadata: Metadata = {
   title: "Ritual Xmas",
@@ -31,7 +32,7 @@ export default function RootLayout({
           style={{ left: 'calc(0.75rem + 3px)' }}
         >
           <Image
-            src="/assets/X_Ritual.jpg"
+            src={`${prefix}/assets/X_Ritual.jpg`}
             alt="Ritual logo"
             width={56}
             height={56}
