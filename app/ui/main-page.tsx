@@ -9,6 +9,8 @@ import { toPng } from "html-to-image";
 import DecorItem from "@/app/ui/decor-item";
 import { toast, ToastContainer } from "react-toastify";
 import DecorBox from "@/app/ui/decor-box";
+import ExportModal from "@/app/ui/export-modal";
+import CapturingModal from "@/app/ui/capturing-modal";
 import Snowfall from "react-snowfall";
 
 export default function MainPage({
@@ -34,6 +36,11 @@ export default function MainPage({
   const [decorItems, setDecorItems] = useState<DraggableItem[]>([]);
   const [nextId, setNextId] = useState(0);
   const [touchExpiration, setTouchExpiration] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportedImageUrl, setExportedImageUrl] = useState<string | null>(null);
+  const [isSavingImage, setIsSavingImage] = useState(false);
+  const [isCopyingImage, setIsCopyingImage] = useState(false);
 
   // Handle saved session
   useEffect(() => {
@@ -122,21 +129,190 @@ export default function MainPage({
     toast("Saved decoration successfully");
   }
 
-  function handleExport() {
-    if (!exportNodeRef.current) {
-      return;
-    }
+  async function handleExport() {
+    if (!exportNodeRef.current || isExporting) return;
 
-    toPng(exportNodeRef.current, { cacheBust: true })
-      .then(dataUrl => {
-        const link = document.createElement("a");
-        link.download = "image.png";
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch(error => {
-        console.error(error);
+    setIsExporting(true);
+    const node = exportNodeRef.current;
+
+    try {
+      // Force reflow and ensure visibility
+      node.style.visibility = 'visible';
+      const _ = node.offsetWidth;
+
+      // Wait for all images with improved detection
+      const imgs = Array.from(node.querySelectorAll('img')) as HTMLImageElement[];
+      
+      const imgLoadPromises = imgs.map(img => {
+        return new Promise<void>((resolve) => {
+          const timeout = setTimeout(() => {
+            console.warn('Image load timeout:', img.src);
+            resolve();
+          }, 8000);
+
+          // Check if image is already loaded and valid
+          if (img.complete && img.naturalHeight > 0 && img.naturalWidth > 0) {
+            clearTimeout(timeout);
+            resolve();
+          } else {
+            const onLoad = () => {
+              clearTimeout(timeout);
+              img.removeEventListener('load', onLoad);
+              img.removeEventListener('error', onError);
+              resolve();
+            };
+            const onError = () => {
+              clearTimeout(timeout);
+              console.warn('Image failed to load:', img.src);
+              img.removeEventListener('load', onLoad);
+              img.removeEventListener('error', onError);
+              resolve();
+            };
+            img.addEventListener('load', onLoad, { once: true });
+            img.addEventListener('error', onError, { once: true });
+
+            // Force reload if pending
+            if (!img.complete) {
+              const originalSrc = img.src;
+              img.src = '';
+              setTimeout(() => { img.src = originalSrc; }, 10);
+            }
+          }
+        });
       });
+
+      await Promise.all(imgLoadPromises);
+
+      // Wait for fonts with timeout
+      if ((document as any).fonts?.ready) {
+        try {
+          await Promise.race([
+            (document as any).fonts.ready,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Font timeout')), 3000))
+          ]);
+        } catch (err) {
+          console.warn('Font loading timeout or failed', err);
+        }
+      }
+
+      // Extended delay to ensure rendering is complete
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      // Generate PNG with optimized settings
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        pixelRatio: 2,
+        canvasWidth: node.clientWidth * 2,
+        canvasHeight: node.clientHeight * 2,
+        backgroundColor: '#ffffff',
+      });
+
+      // Show result modal
+      setExportedImageUrl(dataUrl);
+      setExportModalOpen(true);
+      toast.success('Image ready!');
+    } catch (err) {
+      console.error('Export failed:', err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      toast.error(`Capture failed: ${errorMsg}`);
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleSaveImage() {
+    if (!exportedImageUrl) return;
+    setIsSavingImage(true);
+
+    try {
+      const link = document.createElement('a');
+      link.download = `xmas-decorate-${Date.now()}.png`;
+      link.href = exportedImageUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Image saved successfully!');
+      setExportModalOpen(false);
+    } catch (err) {
+      console.error('Save failed:', err);
+      toast.error('Failed to save image');
+    } finally {
+      setIsSavingImage(false);
+    }
+  }
+
+  async function handleCopyImage() {
+    if (!exportedImageUrl) return;
+    setIsCopyingImage(true);
+
+    try {
+      const response = await fetch(exportedImageUrl);
+      const blob = await response.blob();
+
+      // Use Clipboard API to copy image
+      if (navigator.clipboard?.write) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob }),
+        ]);
+        toast.success('Image copied to clipboard!');
+      } else {
+        toast.warning('Copy not supported on this browser');
+      }
+    } catch (err) {
+      console.error('Copy failed:', err);
+      toast.error('Failed to copy image');
+    } finally {
+      setIsCopyingImage(false);
+    }
+  }
+
+  async function handleShareToX() {
+    if (!exportedImageUrl) return;
+
+    try {
+      const quote = 'Ritual - Merry Christmas 🎄\n#Ritualnet #Ritual';
+      
+      // Fetch the image as blob
+      const response = await fetch(exportedImageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'xmas-decorate.png', { type: 'image/png' });
+
+      // Try Web Share API (works on mobile and some desktop browsers)
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Ritual Xmas Decoration',
+          text: quote,
+        });
+        toast.success('Shared to X!');
+        setExportModalOpen(false);
+      } else {
+        // Fallback: Open X in new tab with quote, user can paste image
+        const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(quote)}`;
+        window.open(tweetUrl, '_blank', 'width=600,height=400');
+        
+        // Copy image to clipboard for easy pasting
+        if (navigator.clipboard?.write) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob }),
+          ]);
+          toast.success('X opened! Image copied - press Ctrl+V to paste in tweet');
+        } else {
+          toast.info('X opened! Please upload image manually');
+        }
+        
+        setExportModalOpen(false);
+      }
+    } catch (err) {
+      console.error('Share failed:', err);
+      // Fallback: just open X
+      const quote = 'Ritual - Merry Christmas 🎄\n#Ritualnet #Ritual';
+      const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(quote)}`;
+      window.open(tweetUrl, '_blank', 'width=600,height=400');
+      setExportModalOpen(false);
+      toast.warning('X opened! Please upload image manually');
+    }
   }
 
   // Close tree sub-menu when clicking/tapping outside the menu
@@ -159,7 +335,10 @@ export default function MainPage({
 
   return (
     <>
-      {/* Save and export */}
+      {/* Merry Christmas blinking text */}
+      <h1 className="blink-red-yellow whitespace-nowrap">Merry Christmas</h1>
+
+      {/* Save and share */}
       <div className="absolute z-20 top-3 right-3">
         <button
           className="bg-blue-400 p-1 rounded-md mr-1"
@@ -168,16 +347,17 @@ export default function MainPage({
           <span className="font-bold">Save</span>
         </button>
         <button
-          className="bg-green-400 p-1 rounded-md ml-1"
+          className="bg-black hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed p-1 rounded-md ml-1 text-white"
           onClick={handleExport}
+          disabled={isExporting}
         >
-          <span className="font-bold">Export to image</span>
+          <span className="font-bold">{isExporting ? 'Preparing...' : 'Share to X'}</span>
         </button>
       </div>
 
       {/* Menu */}
-      <div className="fixed bottom-0 md:m-0 md:top-1/2 md:-translate-y-1/2 md:h-fit">
-        <div className="flex flex-row w-screen bg-blue-500/25 justify-center md:flex-col md:w-fit md:mb-4">
+      <div className="fixed bottom-0 md:m-0 md:top-[4.9375rem] md:translate-y-0 md:h-fit">
+        <div className="flex flex-row w-screen bg-blue-500/25 justify-center md:flex-col md:w-fit md:mb-4 rounded-[7%]">
           <button
             className={`m-2 p-2 font-bold rounded-md ${selectedMenu === 'trees' ? 'bg-blue-700' : 'bg-blue-300'}`}
             onClick={() => setSelectedMenu('trees')}
@@ -209,7 +389,7 @@ export default function MainPage({
         </div>
 
         {/* Tree and item menu */}
-        <div className="md:h-fit md:max-h-[60vh] overflow-x-scroll overflow-y-hidden md:overflow-x-hidden md:overflow-y-scroll bg-blue-500/25">
+        <div className="md:h-fit md:max-h-[60vh] overflow-x-scroll overflow-y-hidden md:overflow-x-hidden md:overflow-y-scroll bg-blue-500/25 rounded-[7%]">
           {/* attach ref to detect outside clicks */}
           <div ref={treeMenuRef} className="w-screen whitespace-nowrap md:w-fit md:max-h-full">
             {/* Tree menu */}
@@ -269,7 +449,7 @@ export default function MainPage({
         </div>
       </div>
 
-      <div className="w-[100vmin] max-w-3xl aspect-video border-8 border-solid border-blue-300 overflow-hidden absolute top-0 bottom-0 left-0 right-0 m-auto">
+      <div className="w-[100vmin] max-w-3xl aspect-video border-8 border-solid border-blue-300 overflow-hidden absolute top-0 bottom-0 left-0 right-0 m-auto rounded-[7%]">
         <DecorBox
           tree={currentTree}
           decorItems={decorItems}
@@ -285,6 +465,19 @@ export default function MainPage({
       <ToastContainer
         position="bottom-right"
         autoClose={3000}
+      />
+
+      {/* Export Modal */}
+      <CapturingModal isOpen={isExporting} />
+      <ExportModal
+        isOpen={exportModalOpen}
+        imageUrl={exportedImageUrl}
+        onClose={() => setExportModalOpen(false)}
+        onCopy={handleCopyImage}
+        onSave={handleSaveImage}
+        onShare={handleShareToX}
+        isCopying={isCopyingImage}
+        isSaving={isSavingImage}
       />
     </>
   );
