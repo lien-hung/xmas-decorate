@@ -1,4 +1,5 @@
 import { MouseEventHandler } from "react";
+import { prefix } from "@/app/lib/prefix";
 
 export default function DecorItem({
   imageSrc,
@@ -13,7 +14,7 @@ export default function DecorItem({
       onClick={handleOnClick}
     >
       <img
-        src={imageSrc}
+        src={`${prefix}/${imageSrc}`}
         alt="Decoration item"
         width={100} height={100}
         className="overflow-hidden"

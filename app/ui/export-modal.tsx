@@ -45,7 +45,23 @@ export default function ExportModal({
               src={imageUrl}
               alt="Exported decoration"
               className="max-w-full h-auto rounded-lg shadow-md max-h-[400px] object-contain"
+              onError={(e) => {
+                console.error('Failed to load exported image');
+                // If image fails to load, it might be invalid - show placeholder
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoad={() => {
+                // Image loaded successfully
+                console.log('Exported image loaded successfully');
+              }}
             />
+          </div>
+        )}
+        {!imageUrl && (
+          <div className="p-6 flex justify-center bg-gray-50">
+            <div className="text-gray-500 text-center">
+              <p>No image available. Please export again.</p>
+            </div>
           </div>
         )}
 

@@ -48,6 +48,7 @@ export default function DecorItemElement({
           sizes="100vw"
           style={{ objectFit: 'contain' }}
           quality={100}
+          loading="eager"
           draggable={false}
           onDoubleClick={onDoubleClick}
           onTouchStart={onTouchStart}

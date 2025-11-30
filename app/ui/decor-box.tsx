@@ -33,6 +33,7 @@ export default function DecorBox({
         sizes="100vw"
         style={{ objectFit: 'cover' }}
         quality={100}
+        priority
         draggable={false}
         className="absolute inset-0"
       />
@@ -46,6 +47,7 @@ export default function DecorBox({
           sizes="100vw"
           style={{ objectFit: 'contain' }}
           quality={100}
+          priority
           draggable={false}
         />
       </div>
