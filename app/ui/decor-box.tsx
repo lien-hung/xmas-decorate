@@ -25,17 +25,10 @@ export default function DecorBox({
 }) {
   return (
     <div ref={exportNodeRef} className="w-full h-full relative">
-      {/* White background image */}
-      <Image
-        src={`${prefix}/assets/white.jpg`}
-        alt="Background"
-        fill
-        sizes="100vw"
-        style={{ objectFit: 'cover' }}
-        quality={100}
-        priority
-        draggable={false}
+      {/* Background color */}
+      <div
         className="absolute inset-0"
+        style={{ backgroundColor: '#0B6E4F' }}
       />
       
       {/* Main tree image */}

@@ -11,6 +11,7 @@ import { toast, ToastContainer } from "react-toastify";
 import DecorBox from "@/app/ui/decor-box";
 import ExportModal from "@/app/ui/export-modal";
 import CapturingModal from "@/app/ui/capturing-modal";
+import GuideModal from "@/app/ui/guide-modal";
 import Snowfall from "react-snowfall";
 
 export default function MainPage({
@@ -42,6 +43,7 @@ export default function MainPage({
   const [isSavingImage, setIsSavingImage] = useState(false);
   const [isCopyingImage, setIsCopyingImage] = useState(false);
   const [decorationVersion, setDecorationVersion] = useState(0); // Track decoration changes
+  const [guideModalOpen, setGuideModalOpen] = useState(false);
 
   // Handle saved session
   useEffect(() => {
@@ -342,7 +344,7 @@ export default function MainPage({
           pixelRatio: 2,
           canvasWidth: nodeWidth * 2,
           canvasHeight: nodeHeight * 2,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#0B6E4F',
           filter: filter,
           style: {
             transform: 'scale(1)',
@@ -568,7 +570,7 @@ export default function MainPage({
       {/* Merry Christmas blinking text */}
       <h1 className="blink-red-yellow whitespace-nowrap">Merry Christmas</h1>
 
-      {/* Save, Clear and share */}
+      {/* Save, Clear, Guide and share */}
       <div className="absolute z-20 top-3 right-3 flex gap-1">
         <button
           className="bg-blue-400 hover:bg-blue-500 p-1 rounded-md"
@@ -581,6 +583,12 @@ export default function MainPage({
           onClick={handleClear}
         >
           <span className="font-bold">Clear</span>
+        </button>
+        <button
+          className="bg-green-400 hover:bg-green-500 p-1 rounded-md"
+          onClick={() => setGuideModalOpen(true)}
+        >
+          <span className="font-bold">Guide</span>
         </button>
         <button
           className="bg-black hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed p-1 rounded-md text-white"
@@ -720,6 +728,12 @@ export default function MainPage({
         onShare={handleShareToX}
         isCopying={isCopyingImage}
         isSaving={isSavingImage}
+      />
+      
+      {/* Guide Modal */}
+      <GuideModal
+        isOpen={guideModalOpen}
+        onClose={() => setGuideModalOpen(false)}
       />
     </>
   );
