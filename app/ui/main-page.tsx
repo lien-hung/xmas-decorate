@@ -187,6 +187,33 @@ export default function MainPage({
     // Force a reflow to apply styles
     void node.offsetWidth;
 
+    function restoreStyles() {
+      if (parentContainer) {
+        parentContainer.className = parentClasses;
+        if (originalInlineOverflow) {
+          parentContainer.style.overflow = originalInlineOverflow;
+        } else {
+          parentContainer.style.removeProperty('overflow');
+        }
+      }
+      if (originalInlinePosition) {
+        node.style.position = originalInlinePosition;
+      } else {
+        node.style.removeProperty('position');
+      }
+      if (originalInlineVisibility) {
+        node.style.visibility = originalInlineVisibility;
+      } else {
+        node.style.removeProperty('visibility');
+      }
+      if (originalInlineOpacity) {
+        node.style.opacity = originalInlineOpacity;
+      } else {
+        node.style.removeProperty('opacity');
+      }
+      node.style.removeProperty('transform');
+    }
+
     try {
       // Temporarily remove overflow-hidden to ensure all items are visible
       if (parentContainer) {
@@ -256,7 +283,7 @@ export default function MainPage({
         });
 
         await Promise.all(imgLoadPromises);
-        
+
         // Verify all images are actually loaded
         const allLoaded = imgs.every(img =>
           img.complete && img.naturalHeight > 0 && img.naturalWidth > 0
@@ -345,69 +372,13 @@ export default function MainPage({
 
         // Restore all original styles after a short delay to ensure image is fully generated
         // Use requestAnimationFrame to ensure DOM updates are complete
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            if (parentContainer) {
-              // Restore class list first
-              parentContainer.className = parentClasses;
-              // Then restore inline style or remove it if it was empty
-              if (originalInlineOverflow) {
-                parentContainer.style.overflow = originalInlineOverflow;
-              } else {
-                parentContainer.style.removeProperty('overflow');
-              }
-            }
-            // Restore node styles
-            if (originalInlinePosition) {
-              node.style.position = originalInlinePosition;
-            } else {
-              node.style.removeProperty('position');
-            }
-            if (originalInlineVisibility) {
-              node.style.visibility = originalInlineVisibility;
-            } else {
-              node.style.removeProperty('visibility');
-            }
-            if (originalInlineOpacity) {
-              node.style.opacity = originalInlineOpacity;
-            } else {
-              node.style.removeProperty('opacity');
-            }
-            node.style.removeProperty('transform');
-          }, 200);
-        });
+        requestAnimationFrame(() => setTimeout(() => restoreStyles(), 200));
       }
     } catch (err) {
       console.error('Export failed:', err);
       const errorMsg = err instanceof Error ? err.message : String(err);
       toast.error(`Capture failed: ${errorMsg}`);
-      // Restore styles even on error
-      if (parentContainer) {
-        // Restore class list
-        parentContainer.className = parentClasses;
-        // Restore inline style
-        if (originalInlineOverflow) {
-          parentContainer.style.overflow = originalInlineOverflow;
-        } else {
-          parentContainer.style.removeProperty('overflow');
-        }
-      }
-      if (originalInlinePosition) {
-        node.style.position = originalInlinePosition;
-      } else {
-        node.style.removeProperty('position');
-      }
-      if (originalInlineVisibility) {
-        node.style.visibility = originalInlineVisibility;
-      } else {
-        node.style.removeProperty('visibility');
-      }
-      if (originalInlineOpacity) {
-        node.style.opacity = originalInlineOpacity;
-      } else {
-        node.style.removeProperty('opacity');
-      }
-      node.style.removeProperty('transform');
+      restoreStyles();
     } finally {
       setIsExporting(false);
     }
