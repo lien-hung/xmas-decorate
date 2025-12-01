@@ -53,7 +53,7 @@ export default function MainPage({
     const savedDecorItems = JSON.parse(savedDecorItemsJson) as Array<DraggableItem>;
     setDecorItems(savedDecorItems);
 
-    const lastSavedItem = savedDecorItems && savedDecorItems[-1];
+    const lastSavedItem = savedDecorItems && savedDecorItems.at(-1);
     if (lastSavedItem) {
       setNextId(lastSavedItem.id + 1);
     }
@@ -149,7 +149,7 @@ export default function MainPage({
     localStorage.removeItem("currentTree");
     localStorage.removeItem("currentItems");
     
-    toast.success("Đã xóa tất cả decoration, quay về mặc định");
+    toast.success("Restored to default");
   }
 
   async function handleExport() {
@@ -601,7 +601,7 @@ export default function MainPage({
 
       {/* Menu */}
       <div className="fixed bottom-0 md:m-0 md:top-19.75 md:translate-y-0 md:h-fit">
-        <div className="flex flex-row w-screen bg-blue-500/25 justify-center md:flex-col md:w-fit md:mb-4 rounded-[7%]">
+        <div className="flex flex-row w-screen bg-blue-500/25 justify-center md:flex-col md:w-fit md:mb-4 md:rounded-[7%]">
           <button
             className={`m-2 p-2 font-bold rounded-md ${selectedMenu === 'trees' ? 'bg-blue-700' : 'bg-blue-300'}`}
             onClick={() => setSelectedMenu('trees')}
@@ -633,7 +633,7 @@ export default function MainPage({
         </div>
 
         {/* Tree and item menu */}
-        <div className="md:h-fit md:max-h-[60vh] overflow-x-scroll overflow-y-hidden md:overflow-x-hidden md:overflow-y-scroll bg-blue-500/25 rounded-[7%]">
+        <div className="md:h-fit md:max-h-[60vh] overflow-x-scroll overflow-y-hidden md:overflow-x-hidden md:overflow-y-scroll bg-blue-500/25 md:rounded-[7%]">
           {/* attach ref to detect outside clicks */}
           <div ref={treeMenuRef} className="w-screen whitespace-nowrap md:w-fit md:max-h-full">
             {/* Tree menu */}
