@@ -5,7 +5,6 @@ import { DraggableItem } from "@/app/lib/definitions";
 import { DraggableEvent } from "react-draggable";
 import { DraggableData, Position, ResizableDelta } from "react-rnd";
 import { ResizeDirection } from "re-resizable";
-import { toPng } from "html-to-image";
 import DecorItem from "@/app/ui/decor-item";
 import { toast, ToastContainer } from "react-toastify";
 import DecorBox from "@/app/ui/decor-box";
@@ -13,6 +12,7 @@ import ExportModal from "@/app/ui/export-modal";
 import CapturingModal from "@/app/ui/capturing-modal";
 import GuideModal from "@/app/ui/guide-modal";
 import Snowfall from "react-snowfall";
+import html2canvas from "html2canvas";
 
 export default function MainPage({
   treeLinks,
@@ -57,7 +57,7 @@ export default function MainPage({
     if (lastSavedItem) {
       setNextId(lastSavedItem.id + 1);
     }
-    
+
     // Load exported image from localStorage if available
     const savedExportedImage = localStorage.getItem("exportedImageUrl");
     if (savedExportedImage) {
@@ -144,11 +144,11 @@ export default function MainPage({
     setCurrentTree(treeLinks[0] || "");
     setNextId(0);
     setTreeSubMenu([]);
-    
+
     // Clear localStorage
     localStorage.removeItem("currentTree");
     localStorage.removeItem("currentItems");
-    
+
     toast.success("Restored to default");
   }
 
@@ -161,35 +161,29 @@ export default function MainPage({
     }
     setExportedImageUrl(null);
     localStorage.removeItem("exportedImageUrl");
-    
+
     // Wait a bit for modal to close and state to update
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     setIsExporting(true);
     const node = exportNodeRef.current;
     const parentContainer = node.parentElement;
 
-    // Store original computed styles to restore later (not just inline styles)
-    const originalOverflow = parentContainer ? window.getComputedStyle(parentContainer).overflow : '';
-    const originalPosition = window.getComputedStyle(node).position;
-    const originalVisibility = window.getComputedStyle(node).visibility;
-    const originalOpacity = window.getComputedStyle(node).opacity;
-    
     // Store inline styles separately
     const originalInlineOverflow = parentContainer?.style.overflow || '';
     const originalInlinePosition = node.style.position || '';
     const originalInlineVisibility = node.style.visibility || '';
     const originalInlineOpacity = node.style.opacity || '';
-    
+
     // Store the class list to restore later
     const parentClasses = parentContainer?.className || '';
-    
+
     // Reset and ensure node is in clean state before export
     node.style.visibility = 'visible';
     node.style.opacity = '1';
     node.style.position = 'relative';
     node.style.transform = 'none';
-    
+
     // Force a reflow to apply styles
     void node.offsetWidth;
 
@@ -201,7 +195,7 @@ export default function MainPage({
         // Also set inline style with important to override
         parentContainer.style.setProperty('overflow', 'visible', 'important');
       }
-      
+
       // Force multiple reflows to ensure layout is stable
       void node.offsetWidth;
       void node.offsetHeight;
@@ -215,7 +209,7 @@ export default function MainPage({
 
       while (!allImagesLoaded && attempts < maxAttempts) {
         const imgs = Array.from(node.querySelectorAll('img')) as HTMLImageElement[];
-        
+
         if (imgs.length === 0) {
           // No images found, wait a bit and check again
           await new Promise(resolve => setTimeout(resolve, 200));
@@ -264,10 +258,10 @@ export default function MainPage({
         await Promise.all(imgLoadPromises);
         
         // Verify all images are actually loaded
-        const allLoaded = imgs.every(img => 
+        const allLoaded = imgs.every(img =>
           img.complete && img.naturalHeight > 0 && img.naturalWidth > 0
         );
-        
+
         if (allLoaded) {
           allImagesLoaded = true;
         } else {
@@ -277,7 +271,6 @@ export default function MainPage({
       }
 
       // Wait for all Rnd components to finish rendering
-      const rndElements = Array.from(node.querySelectorAll('[class*="react-rnd"]')) as HTMLElement[];
       await new Promise(resolve => setTimeout(resolve, 300));
 
       // Wait for fonts with timeout
@@ -295,15 +288,11 @@ export default function MainPage({
       // Extended delay to ensure all rendering is complete
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      // Force another reflow before capture
-      const ___ = node.offsetWidth;
-      const ____ = node.offsetHeight;
-
       // Suppress CSS rules SecurityError by temporarily overriding the getter
       const originalCSSRulesGetter = Object.getOwnPropertyDescriptor(CSSStyleSheet.prototype, 'cssRules')?.get;
       if (originalCSSRulesGetter) {
         Object.defineProperty(CSSStyleSheet.prototype, 'cssRules', {
-          get: function() {
+          get: function () {
             try {
               return originalCSSRulesGetter.call(this);
             } catch (e) {
@@ -321,37 +310,22 @@ export default function MainPage({
 
       let dataUrl: string;
       try {
-        // Generate PNG with optimized settings
-        // Filter function to skip stylesheets that cause SecurityError
-        const filter = (node: Node) => {
-          // Skip script and style tags that might cause issues
-          if (node.nodeName === 'SCRIPT' || node.nodeName === 'STYLE') {
-            return false;
-          }
-          return true;
-        };
-
         // Ensure node dimensions are valid before capture
         const nodeWidth = node.clientWidth || node.offsetWidth || 800;
         const nodeHeight = node.clientHeight || node.offsetHeight || 600;
-        
+
         if (nodeWidth === 0 || nodeHeight === 0) {
           throw new Error('Node has invalid dimensions');
         }
 
-        dataUrl = await toPng(node, {
-          cacheBust: true,
-          pixelRatio: 2,
-          canvasWidth: nodeWidth * 2,
-          canvasHeight: nodeHeight * 2,
+        const canvas = await html2canvas(node, {
+          width: nodeWidth,
+          height: nodeHeight,
           backgroundColor: '#0B6E4F',
-          filter: filter,
-          style: {
-            transform: 'scale(1)',
-            opacity: '1',
-            visibility: 'visible',
-          },
+          useCORS: true,
+          scale: 2,
         });
+        dataUrl = canvas.toDataURL("image/png", 1.0);
 
         // Show result modal with fresh image
         // Use decorationVersion in the data URL to ensure it's unique
@@ -368,7 +342,7 @@ export default function MainPage({
             configurable: true,
           });
         }
-        
+
         // Restore all original styles after a short delay to ensure image is fully generated
         // Use requestAnimationFrame to ensure DOM updates are complete
         requestAnimationFrame(() => {
@@ -491,12 +465,12 @@ export default function MainPage({
 
     try {
       const quote = "I'm in for Week 1 of #RitualXmas\n\nNow it's your turn Ritualist, the holiday magic start with you\n\n@ritualnet @ritualfnd";
-      
+
       // Copy image to clipboard for easy pasting
       try {
         const response = await fetch(exportedImageUrl);
         const blob = await response.blob();
-        
+
         if (navigator.clipboard?.write) {
           await navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob }),
@@ -505,11 +479,11 @@ export default function MainPage({
       } catch (clipboardErr) {
         console.warn('Could not copy image to clipboard:', clipboardErr);
       }
-      
+
       // Open X/Twitter with quote pre-filled
       const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(quote)}`;
       window.open(tweetUrl, '_blank');
-      
+
       toast.success('Đã mở X! Hình ảnh đã được sao chép - nhấn Ctrl+V để dán vào tweet');
       setExportModalOpen(false);
     } catch (err) {
@@ -729,7 +703,7 @@ export default function MainPage({
         isCopying={isCopyingImage}
         isSaving={isSavingImage}
       />
-      
+
       {/* Guide Modal */}
       <GuideModal
         isOpen={guideModalOpen}

@@ -2,7 +2,6 @@ import { DraggableEventHandler } from "react-draggable";
 import { DraggableItem } from "@/app/lib/definitions";
 import { Rnd, RndResizeCallback } from "react-rnd";
 import { MouseEventHandler, TouchEventHandler } from "react";
-import Image from "next/image";
 import { prefix } from "@/app/lib/prefix";
 
 export default function DecorItemElement({
@@ -39,16 +38,12 @@ export default function DecorItemElement({
       minHeight={1}
       className="hover:border-2 hover:border-gray-400 active:border-2 active:border-gray-400"
     >
-      <div className="relative w-full h-full">
-        <Image
+      <div className="relative w-full h-full flex">
+        <img
           id={`${item.id}`}
           src={`${prefix}/${item.imageSrc}`}
           alt="Decoration item"
-          fill
-          sizes="100vw"
-          style={{ objectFit: 'contain' }}
-          quality={100}
-          loading="eager"
+          className="max-w-full max-h-full m-auto"
           draggable={false}
           onDoubleClick={onDoubleClick}
           onTouchStart={onTouchStart}
