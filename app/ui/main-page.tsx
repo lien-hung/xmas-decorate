@@ -39,10 +39,9 @@ export default function MainPage({
   const [touchExpiration, setTouchExpiration] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
-  const [exportedImageUrl, setExportedImageUrl] = useState<string | null>(null);
+  const [exportedImageUrl, setExportedImageUrl] = useState("");
   const [isSavingImage, setIsSavingImage] = useState(false);
   const [isCopyingImage, setIsCopyingImage] = useState(false);
-  const [decorationVersion, setDecorationVersion] = useState(0); // Track decoration changes
   const [guideModalOpen, setGuideModalOpen] = useState(false);
 
   // Handle saved session
@@ -159,7 +158,8 @@ export default function MainPage({
     if (exportModalOpen) {
       setExportModalOpen(false);
     }
-    setExportedImageUrl(null);
+    URL.revokeObjectURL(exportedImageUrl);
+    setExportedImageUrl("");
     localStorage.removeItem("exportedImageUrl");
 
     // Wait a bit for modal to close and state to update
@@ -335,7 +335,6 @@ export default function MainPage({
         });
       }
 
-      let dataUrl: string;
       try {
         // Ensure node dimensions are valid before capture
         const nodeWidth = node.clientWidth || node.offsetWidth || 800;
@@ -349,18 +348,16 @@ export default function MainPage({
           width: nodeWidth,
           height: nodeHeight,
           backgroundColor: '#0B6E4F',
-          useCORS: true,
           scale: 2,
         });
-        dataUrl = canvas.toDataURL("image/png", 1.0);
 
-        // Show result modal with fresh image
-        // Use decorationVersion in the data URL to ensure it's unique
-        setExportedImageUrl(dataUrl);
-        // Save exported image to localStorage for persistence across page refresh
-        localStorage.setItem("exportedImageUrl", dataUrl);
-        setExportModalOpen(true);
-        toast.success('Image ready!');
+        canvas.toBlob(blob => {
+          const exportUrl = URL.createObjectURL(blob!);
+          setExportedImageUrl(exportUrl);
+          localStorage.setItem("exportedImageUrl", exportUrl);
+          setExportModalOpen(true);
+          toast.success('Image ready!');
+        });
       } finally {
         // Restore original CSS rules getter immediately
         if (originalCSSRulesGetter) {
@@ -370,8 +367,7 @@ export default function MainPage({
           });
         }
 
-        // Restore all original styles after a short delay to ensure image is fully generated
-        // Use requestAnimationFrame to ensure DOM updates are complete
+        // Restore all original styles after a short delay
         requestAnimationFrame(() => setTimeout(() => restoreStyles(), 200));
       }
     } catch (err) {
@@ -470,13 +466,11 @@ export default function MainPage({
 
   // Track decoration changes to invalidate exported image
   useEffect(() => {
-    // Increment version when decoration actually changes (items count or tree)
-    // This will be used to ensure fresh export
-    setDecorationVersion(prev => prev + 1);
     // Clear exported image when decoration changes (only if modal is closed)
     // This ensures that when user changes decoration and exports again, new image is created
     if (!exportModalOpen && exportedImageUrl) {
-      setExportedImageUrl(null);
+      URL.revokeObjectURL(exportedImageUrl);
+      setExportedImageUrl("");
     }
   }, [decorItems.length, currentTree, exportModalOpen]);
 
@@ -664,8 +658,8 @@ export default function MainPage({
         onClose={() => {
           setExportModalOpen(false);
           // Clear exported image URL and localStorage when closing modal
-          // This ensures fresh export next time
-          setExportedImageUrl(null);
+          URL.revokeObjectURL(exportedImageUrl);
+          setExportedImageUrl("");
           localStorage.removeItem("exportedImageUrl");
         }}
         onCopy={handleCopyImage}
